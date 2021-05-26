@@ -29,6 +29,7 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
     private static final String DB_URL = "jdbc:mysql://192.168.2.27/inventory";
     private static final String USER = "user";
     private static final String PASS = "password";
+    private static String scResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +121,7 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
     @Override
     public void handleResult(Result result) {
         String scanResult = result.getText();
+        ScanActivity.setScResult(scanResult);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Scan Result");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -147,20 +149,23 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
         alert.show();
     }
 
+    public static String getScResult() {
+        return scResult;
+    }
+
+    public static void setScResult(String scResult) {
+        ScanActivity.scResult = scResult;
+    }
+
     private void btnConn() {
         Send objSend = new Send();
         objSend.execute("");
     }
 
-    private class Send extends AsyncTask<String, String ,String> implements ZXingScannerView.ResultHandler{
+    private class Send extends AsyncTask<String, String ,String>{
 
         String msg = "";
-        String text = "eat ass";
-
-        @Override
-        public void handleResult(Result result) {
-             text = result.getText();
-        }
+        String text = ScanActivity.getScResult();
 
         @Override
         protected String doInBackground(String... strings) {
