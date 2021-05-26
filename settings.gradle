@@ -1,2 +1,4 @@
+include ':mysql-connector-java-5.1.46-bin'
+include ':mysql-connector-java-8.0.25'
 include ':app'
 rootProject.name = "QR_Barcode_scanner"

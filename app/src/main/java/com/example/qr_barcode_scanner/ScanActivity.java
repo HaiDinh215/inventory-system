@@ -4,19 +4,21 @@ import androidx.appcompat.app.AppCompatActivity;
         import androidx.core.app.ActivityCompat;
         import androidx.core.content.ContextCompat;
 
-        import android.Manifest;
-        import android.app.AlertDialog;
+import android.app.AlertDialog;
         import android.content.DialogInterface;
-        import android.content.Intent;
-        import android.content.pm.PackageManager;
-        import android.net.Uri;
-        import android.os.Build;
+import android.content.pm.PackageManager;
+import android.os.AsyncTask;
+import android.os.Build;
         import android.os.Bundle;
-        import android.widget.Toast;
+import android.widget.Toast;
 
         import com.google.zxing.Result;
 
-        import me.dm7.barcodescanner.zxing.ZXingScannerView;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+
+import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
         import static android.Manifest.permission.CAMERA;
 
@@ -24,6 +26,9 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
 
     private static final int REQUEST_CAMERA = 1;
     private ZXingScannerView scannerView;
+    private static final String DB_URL = "jdbc:mysql://192.168.2.27/inventory";
+    private static final String USER = "user";
+    private static final String PASS = "password";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +116,7 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                 .show();
     }
 
+    //result handling when code is scanned
     @Override
     public void handleResult(Result result) {
         String scanResult = result.getText();
@@ -122,16 +128,60 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                 scannerView.resumeCameraPreview(ScanActivity.this);
             }
         });
-        builder.setNeutralButton("Visit", new DialogInterface.OnClickListener() {
+//        builder.setNeutralButton("Visit", new DialogInterface.OnClickListener() {
+//            @Override
+//            //if code scanned is a link and Visit is pressed then proceed to that link
+//            public void onClick(DialogInterface dialog, int i) {
+//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(scanResult));
+//                startActivity(intent);
+//            }
+//        });
+        builder.setNeutralButton("Save", new DialogInterface.OnClickListener() {
             @Override
-            //if code scanned is a link and Visit is pressed then proceed to that link
             public void onClick(DialogInterface dialog, int i) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(scanResult));
-                startActivity(intent);
+                btnConn();
             }
         });
         builder.setMessage(scanResult);
         AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    private void btnConn() {
+        Send objSend = new Send();
+        objSend.execute("");
+    }
+
+    private class Send extends AsyncTask<String, String ,String> implements ZXingScannerView.ResultHandler{
+
+        String msg = "";
+        String text = "eat ass";
+
+        @Override
+        public void handleResult(Result result) {
+             text = result.getText();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            try{
+                Class.forName("com.mysql.jdbc.Driver");
+                Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+                if(conn == null){
+                    msg = "Connection goes wrong";
+                }else{
+                    String query = "INSERT INTO test (Code) VALUES('"+text+"')";
+                    Statement stmt = conn.createStatement();
+                    stmt.executeUpdate(query);
+                    msg = "Inserting Successful!!!";
+                }
+                conn.close();
+            }
+            catch (Exception e){
+                msg = "Connection goes wrong";
+                e.printStackTrace();
+            }
+            return msg;
+        }
     }
 }

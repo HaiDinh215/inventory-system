@@ -42,6 +42,4 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this,ScanActivity.class);
         startActivity(intent);
     }
-
-
 }
