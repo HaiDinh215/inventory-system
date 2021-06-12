@@ -30,6 +30,9 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
     private static final String USER = "user";
     private static final String PASS = "password";
     private static String scResult;
+    //private static String runQuery;
+    //attempt to use StringBuffer on codeScannedCases failed
+    //public static StringBuffer insertQuery = new StringBuffer("");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,7 +133,8 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                 scannerView.resumeCameraPreview(ScanActivity.this);
             }
         });
-//        builder.setNeutralButton("Visit", new DialogInterface.OnClickListener() {
+//if code scanned contain a link then proceed to open that link
+////        builder.setNeutralButton("Visit", new DialogInterface.OnClickListener() {
 //            @Override
 //            //if code scanned is a link and Visit is pressed then proceed to that link
 //            public void onClick(DialogInterface dialog, int i) {
@@ -157,15 +161,25 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
         ScanActivity.scResult = scResult;
     }
 
+//    public static String getRunQuery() {
+//        return runQuery;
+//    }
+//
+//    public static void setRunQuery(String runQuery) {
+//        ScanActivity.runQuery = runQuery;
+//    }
+
+
     private void btnConn() {
         Send objSend = new Send();
         objSend.execute("");
     }
 
-    private class Send extends AsyncTask<String, String ,String>{
+    private static class Send extends AsyncTask<String, String ,String>{
 
         String msg = "";
         String text = ScanActivity.getScResult();
+        private static String newQuery;
 
         @Override
         protected String doInBackground(String... strings) {
@@ -175,9 +189,9 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                 if(conn == null){
                     msg = "Connection goes wrong";
                 }else{
-                    String query = "INSERT INTO test (Code) VALUES('"+text+"')";
+                    Send.codeScannedCases();
                     Statement stmt = conn.createStatement();
-                    stmt.executeUpdate(query);
+                    stmt.executeUpdate(newQuery);
                     msg = "Inserting Successful!!!";
                 }
                 conn.close();
@@ -187,6 +201,17 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                 e.printStackTrace();
             }
             return msg;
+        }
+
+        public static void codeScannedCases(){
+            String code = ScanActivity.getScResult();
+            String str = "CND Cool Blue CoolBlue Hand Cleanser";
+            String str1 = "gummy";
+            if(code.equals("639370913391")){
+                newQuery = "INSERT INTO test (Code, Name) VALUES('"+code+"', '"+str+"')";
+            }else if (code.equals("029537657853")){
+                newQuery = "INSERT INTO test (Code, Name) VALUES('"+code+"', '"+str1+"')";
+            }
         }
     }
 }
